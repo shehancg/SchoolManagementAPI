@@ -43,8 +43,6 @@ namespace CoreWebApi.Repositories
             if (existingTeacherWithSameContactNo != null)
             {
                 throw new InvalidOperationException("A teacher with the same ContactNo already exists.");
-                // Alternatively, you can return an error response instead of throwing an exception.
-                // For example: return new ErrorResult("A teacher with the same ContactNo already exists.");
             }
 
             _context.Teachers.Add(teacher);
@@ -53,12 +51,41 @@ namespace CoreWebApi.Repositories
         }
 
 
-        public async Task<TeacherModel> UpdateTeacher(TeacherModel teacher)
+        /*public async Task<TeacherModel> UpdateTeacher(TeacherModel teacher)
         {
+
             _context.Entry(teacher).State = EntityState.Modified;
             await _context.SaveChangesAsync();
             return teacher;
+        }*/
+
+        public async Task<TeacherModel> UpdateTeacher(TeacherModel teacher)
+        {
+            // Check if a teacher with the same ContactNo already exists, excluding the current teacher
+            var existingTeacherWithSameContactNo = await _context.Teachers
+                .FirstOrDefaultAsync(t => t.ContactNo == teacher.ContactNo && t.TeacherID != teacher.TeacherID);
+
+            if (existingTeacherWithSameContactNo != null)
+            {
+                throw new InvalidOperationException("A teacher with the same ContactNo already exists.");
+            }
+
+            // Set the teacher entity as modified in the context
+            _context.Entry(teacher).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                // Handle concurrency conflicts 
+                throw;
+            }
+
+            return teacher;
         }
+
 
         public async Task<bool> DeleteTeacher(int id)
         {

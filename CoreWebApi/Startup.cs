@@ -21,6 +21,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using CoreWebApi.Services;
 using CoreWebApi.Services.Impl;
+using CoreWebApi.Middleware;
 
 namespace CoreWebApi
 {
@@ -56,6 +57,7 @@ namespace CoreWebApi
 
             // Teacher Repository
             services.AddScoped<ITeacherRepository, TeacherRepository>();
+            services.AddLogging();
 
             // Subject Repository
             services.AddScoped<ISubjectRepository, SubjectRepository>();
@@ -123,6 +125,8 @@ namespace CoreWebApi
             {
                 endpoints.MapControllers();
             });
+
+            app.UseMiddleware<ErrorHandlingMiddleware>();
 
             // Enable middleware to serve generated Swagger as a JSON endpoint.
             app.UseSwagger();
